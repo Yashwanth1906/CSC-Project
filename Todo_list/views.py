@@ -21,6 +21,10 @@ class TaskList(LoginRequiredMixin,ListView):         # ListView is a class which
         context = super().get_context_data(**kwargs)                
         context["Tasks"] = context["Tasks"].filter(user = self.request.user)        # context is the object that carries all the tuples in the database and that is being filtered according to the current logged in user
         context["count"] = context["Tasks"].filter(complete = False).count()        # Juz counting the incomplete items
+        search = self.request.GET.get('search') or ''
+        if search:
+            context["Tasks"] = context["Tasks"].filter(title__icontains = search)
+        context["search"] = search
         return context
 
 
@@ -65,8 +69,8 @@ class SignUpView(FormView):
     form_class = UserCreationForm
     def get(self,*args,**kwargs):               #  *args recieves the no. of. non-keyword arguments passed and **kwargs recieve the keyword arguments(i.e. Key-value pair arguments) passed to the method
         if self.request.user.is_authenticated:      # This method is used to restrict the authenticated user to see the SignUp page
-            return redirect('tasks')
-        return super(SignUpView,self).get()              
+            return redirect("tasks")
+        return super(SignUpView,self).get(*args,**kwargs)              
     success_url = reverse_lazy("tasks")
 
     def form_valid(self, form):                     #Once the form is created the form_valid method validate the form and save that form by Passing the SignupView to the FormView class This is how we need to send the CustomCreateView to the ParentView 
